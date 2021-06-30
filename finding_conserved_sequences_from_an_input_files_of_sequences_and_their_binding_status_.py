@@ -41,12 +41,7 @@ sequences = list(filter(None, sequences))  # This removes empty sequences.
 pd.DataFrame(sequences, index=np.arange(1, len(sequences)+1), 
              columns=['Sequences']).head()
 
-"""The next  step is to organize the data into a format that can be passed into a deep learning algorithm. Most deep learning algorithms accept data in the form of vectors or matrices (or more generally, tensors). 
 
-To get each DNA sequence in the form of a matrix, we use _one-hot encoding_, which encodes every base in a sequence in the form of a 4-dimensional vector, with a separate dimension for each base. We place a "1" in the dimension corresponding to the base found in the DNA sequence, and "0"s in all other slots. We then concatenate these 4-dimensional vectors together along the bases in the sequence to form a matrix. 
-
-In the cell below, we one-hot encode the simulated DNA sequences, and show an example of what the one-hot encoded sequence looks like:
-"""
 
 from sklearn.preprocessing import LabelEncoder, OneHotEncoder
 
@@ -69,7 +64,6 @@ print("Example sequence\n-----------------------")
 print('DNA Sequence #1:\n',sequences[0][:10],'...',sequences[0][-10:])
 print('One hot encoding of Sequence #1:\n',input_features[0].T)
 
-"""Similarly, we can go ahead and load the labels (_response variables_). In this case, the labels are structured as follows: a "1" indicates that a protein bound to the sequence, while a "0" indicates that the protein did not. While we could use the labels as a vector, it is often easier to similarly one-hot encode the labels, as we did the features. We carry out that here:"""
 
 labels = list(filter(None, labels))  # removes empty sequences
 
@@ -80,33 +74,13 @@ input_labels = one_hot_encoder.fit_transform(labels).toarray()
 print('Labels:\n',labels.T)
 print('One-hot encoded labels:\n',input_labels.T)
 
-"""We also go ahead and split the data into training and test sets. The purpose of the test set is to ensure that we can observe the performance of the model on new data, not seen previously during training. At a later step, we will further partition the training set into a training and validation set."""
 
 from sklearn.model_selection import train_test_split
 
 train_features, test_features, train_labels, test_labels = train_test_split(
     input_features, input_labels, test_size=0.25, random_state=42)
 
-"""## 2. Select the Architecture and Train
 
-![alt text](https://github.com/abidlabs/deep-learning-genomics-primer/blob/master/Screenshot%20from%202018-08-01%2020-31-49.png?raw=true)
-
-Next, we choose a neural network architecture to train the model. In this tutorial, we choose a simple 1D convolutional neural network (CNN), which is commonly used in deep learning for functional genomics applications.
-
-A CNN learns to recognize patterns that are generally invariant across space, by trying to match the input sequence to a number of learnable "filters" of a fixed size. In our dataset, the filters will be motifs within the DNA sequences. The CNN may then learn to combine these filters to recognize a larger structure (e.g. the presence or absence of a transcription factor binding site). 
-
-We will use the deep learning library `Keras`. As of 2017, `Keras` has been integrated into `TensorFlow`,  which makes it very easy to construct neural networks. We only need to specify the kinds of layers we would like to include in our network, and the dimensionality of each layer. The CNN we generate in this example consists of the following layers:
-
-- _Conv1D_: We define our convolutional layer to have 32 filters of size 12 bases.
-
-- _MaxPooling1D_: After the convolution, we use a pooling layer to down-sample the output of the each of the 32 convolutional filters. Though not always required, this is a typical form of non-linear down-sampling used in CNNs.
-
-- _Flatten_: This layer flattens the output of the max pooling layer, combining the results of the convolution and pooling layers across all 32 filters. 
-
-- _Dense_: The first Dense tensor creates a layer (dense_1) that compresses the representation of the flattened layer, resulting in smaller layer with 16 tensors, and the second Dense function converges the tensors into the output layer (dense_2) that consists of the two possible response values (0 or 1).
-
-We can see the details of the architecture of the neural network we have created by running `model.summary()`, which prints the dimensionality and number of parameters for each layer in our network.
-"""
 
 from tensorflow.keras.layers import Conv1D, Dense, MaxPooling1D, Flatten
 from tensorflow.keras.models import Sequential
@@ -123,7 +97,6 @@ model.compile(loss='binary_crossentropy', optimizer='adam',
               metrics=['binary_accuracy'])
 model.summary()
 
-"""Now, we are ready to go ahead and train the neural network. We will further divide the training set into a training and validation set. We will train only on the reduced training set, but plot the loss curve on both the training and validation sets. Once the loss for the validation set stops improving or gets worse throughout the learning cycles, it is time to stop training because the model has already converged and may be just overfitting."""
 
 history = model.fit(train_features, train_labels, 
                     epochs=50, verbose=0, validation_split=0.25)
@@ -137,7 +110,6 @@ plt.xlabel('epoch')
 plt.legend(['train', 'validation'])
 plt.show()
 
-"""Similarly, we can plot the accuracy of our neural network on the binary classification task. The metric used in this example is the _binary accuracy_, which calculates the proportion of predictions that match labels or response variables. Other metrics may be used in different tasks -- for example, the _mean squared error_ is typically used to measure the accuracy for continuous response variables (e.g. polygenic risk scores, total serum cholesterol level, height, weight and systolic blood pressure)."""
 
 plt.figure()
 plt.plot(history.history['binary_accuracy'])
@@ -148,12 +120,7 @@ plt.xlabel('epoch')
 plt.legend(['train', 'validation'])
 plt.show()
 
-"""## 3. Evaluate
 
-![alt text](https://github.com/abidlabs/deep-learning-genomics-primer/blob/master/Screenshot%20from%202018-08-01%2020-32-12.png?raw=true)
-
-The best way to evaluate whether the network has learned to classify sequences is to evaluate its performance on a fresh test set consisting of data that it has not observed at all during training. Here, we evaluate the model on the test set and plot the results as a confusion matrix. Nearly every test sequence should be correctly classified.
-"""
 
 from sklearn.metrics import confusion_matrix
 import itertools
@@ -180,14 +147,7 @@ for i, j in itertools.product(range(cm.shape[0]), range(cm.shape[1])):
              horizontalalignment='center',
              color='white' if cm[i, j] > 0.5 else 'black')
 
-"""## 4. Interpret
 
-![alt text](https://github.com/abidlabs/deep-learning-genomics-primer/blob/master/Screenshot%20from%202018-08-01%2020-32-31.png?raw=true)
-
-Your results so far should allow you to conclude that the neural network is quite effective in learning to distinguish sequences that bind the protein from sequences that do not. But can we understand _why_ the neural network classifies a training point in the way that it does? To do so, we can compute a simple _saliency map_, which is the gradient of the model's prediction with respect to each individual nucleotide. 
-
-In other words, the saliency maps shows how the output response value changes with respect to a small changes in input nucleotide sequence. All the positive values in the gradients tell us that a small change to that nucleotide will change the output value. Hence, visualizing these gradients for a given input sequence, should provide some clues about what nucleotides form the binding motive that we are trying to identify.
-"""
 
 
 
@@ -217,15 +177,3 @@ plt.xticks(np.arange(len(sal)), list(sequences[sequence_index]));
 plt.title('Saliency map for bases in one of the positive sequences'
           ' (green indicates the actual bases in motif)');
 
-"""The results above should show high saliency values for the bases _CGACCGAACTCC_ appearing in the DNA sequence. If you recall from the top of the document, this is exactly the motif that we embedded in the positive sequences! The raw saliency values may be non-zero for other bases as well -- the gradient-based saliency map method is not perfect, and there other more complex interpretation methods that are used in practice to obtain better results.  
-
-Furthermore, we may explore other architectures for our neural network to see if we can improve performance on the validation dataset. For example, we could choose different _hyper-parameters_, which are variables that define the network structure (e.g. the number of dense or convolutional layers, the dimensionality of each layer, etc.) and variables that determine how the network is trained (e.g. the number of epochs, the learning rate, etc.). Testing different hyper-parameter values or performing a hyper-parameter search grid are good practices that may help the deep learning procedure to obtain a clearer signal for classifying sequences and identifying the binding motif.
-
-## Acknowledgements
-
-Thanks to Julia di lulio and Raquel Dias for helpful comments and suggestions in preparing this notebook.
-
-# GitHub Repository
-
-If you found this tutorial helpful, kindly star the [associated GitHub repo](https://github.com/abidlabs/deep-learning-genomics-primer/blob/master/A_Primer_on_Deep_Learning_in_Genomics_Public.ipynb) so that it is more visible to others as well!
-"""
