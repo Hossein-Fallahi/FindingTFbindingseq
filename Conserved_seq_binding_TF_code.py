@@ -41,7 +41,8 @@ from sklearn.preprocessing import LabelEncoder, OneHotEncoder
 
 # The LabelEncoder encodes a sequence of bases as a sequence of integers. We do this to convert entry data to a readable format for the ML algorithms
 integer_encoder = LabelEncoder()  
-# The OneHotEncoder converts an array of integers to a sparse matrix where each row corresponds to one possible value of each feature.
+# The OneHotEncoder converts an array of integers to a sparse matrix (a matrix with most elements equal to zero), where each row corresponds to one possible value of each feature. So, we have four rowas and one for A, one for T and so on. Wherever A exist we would have a 1 and on other places we have 0.
+
 one_hot_encoder = OneHotEncoder(categories='auto')   
 input_features = []
 
@@ -67,6 +68,8 @@ input_labels = one_hot_encoder.fit_transform(labels).toarray()
 print('Labels:\n',labels.T)
 print('One-hot encoded labels:\n',input_labels.T)
 
+
+"Building the model"
 
 from sklearn.model_selection import train_test_split
 
