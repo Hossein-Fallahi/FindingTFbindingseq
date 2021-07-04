@@ -39,10 +39,9 @@ pd.DataFrame(sequences, index=np.arange(1, len(sequences)+1),
 
 from sklearn.preprocessing import LabelEncoder, OneHotEncoder
 
-# The LabelEncoder encodes a sequence of bases as a sequence of integers.
+# The LabelEncoder encodes a sequence of bases as a sequence of integers. We do this to convert entry data to a readable format for the ML algorithms
 integer_encoder = LabelEncoder()  
-# The OneHotEncoder converts an array of integers to a sparse matrix where 
-# each row corresponds to one possible value of each feature.
+# The OneHotEncoder converts an array of integers to a sparse matrix where each row corresponds to one possible value of each feature.
 one_hot_encoder = OneHotEncoder(categories='auto')   
 input_features = []
 
@@ -55,8 +54,8 @@ for sequence in sequences:
 np.set_printoptions(threshold=40)
 input_features = np.stack(input_features)
 print("Example sequence\n-----------------------")
-print('DNA Sequence #1:\n',sequences[0][:10],'...',sequences[0][-10:])
-print('One hot encoding of Sequence #1:\n',input_features[0].T)
+print('By converting the DNA Sequence #1:\n',sequences[0][:10],'...',sequences[0][-10:],'\n\n')
+print('Here is One hot encoding of Sequence #1:\n\n',input_features[0].T)
 
 
 labels = list(filter(None, labels))  # removes empty sequences
