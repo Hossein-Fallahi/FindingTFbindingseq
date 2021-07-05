@@ -93,6 +93,7 @@ model.compile(loss='binary_crossentropy', optimizer='adam',
               metrics=['binary_accuracy'])
 model.summary()
 
+# Here we can bring up the model and investigate its performance
 
 history = model.fit(train_features, train_labels, 
                     epochs=50, verbose=0, validation_split=0.25)
@@ -116,7 +117,7 @@ plt.xlabel('epoch')
 plt.legend(['train', 'validation'])
 plt.show()
 
-
+# use prediction to see waht would be the results of the model learned in the previous section
 
 from sklearn.metrics import confusion_matrix
 import itertools
@@ -145,7 +146,7 @@ for i, j in itertools.product(range(cm.shape[0]), range(cm.shape[1])):
 
 
 
-
+# Visually inspect the sequence logo interms of binding affinity and probability
 
 import tensorflow.keras.backend as K
 
