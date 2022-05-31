@@ -8,4 +8,5 @@ You only need two sets of input:
 1- a file conating the sequences on each line   
 2- a lable file telling the status of the seq either 0/1
 
+This will predict that if a sequence have a biinding site for a particular TF.
 
